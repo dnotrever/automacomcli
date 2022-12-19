@@ -1,0 +1,10 @@
+/__pycache__
+SeleniumBots/__pycache__
+Sheets/
+build/
+dist/
+tempCodeRunnerFile.py
+tests.py
+main.spec
+.env
+infra_configs.py
