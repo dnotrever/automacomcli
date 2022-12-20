@@ -1,8 +1,6 @@
 import pandas as pd
 
-condominiums = pd.read_excel('Sheets/Condominiums_List.xlsx', sheet_name='Condominios')
-zona_oeste = pd.read_excel('Sheets/Condominiums_List.xlsx', sheet_name='ZOeste')
-zona_norte = pd.read_excel('Sheets/Condominiums_List.xlsx', sheet_name='ZNorte')
+condominiums = pd.read_excel('Sheets/Condominiums_List.xlsx', sheet_name='Condomínios')
 
 customers_list = pd.read_excel("../relatorio.xlsx")
 logins_list = pd.read_excel("../relatorio (1).xlsx")
