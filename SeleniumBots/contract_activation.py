@@ -1,4 +1,4 @@
-def contract_activation(op, customer, test=False, secs=1.0):
+def contract_activation(op, customer_id, customer_name, test=False, secs=1.0):
 
     import time
     from selenium import webdriver
@@ -41,11 +41,11 @@ def contract_activation(op, customer, test=False, secs=1.0):
 
     ## Procurar Cliente
     time.sleep(secs)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.NAME, 'q'))).send_keys(customer)
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.NAME, 'q'))).send_keys(customer_id)
     time.sleep(secs)
     driver.find_element(By.NAME, 'q').send_keys(Keys.ENTER)
 
-    customer_name = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[2]/div/div[6]/table/tbody/tr/td[4]/div'))).text
+    # customer_name = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[2]/div/div[6]/table/tbody/tr/td[4]/div'))).text
 
     ## Editar
     time.sleep(secs)
@@ -105,7 +105,7 @@ def contract_activation(op, customer, test=False, secs=1.0):
 
     driver.close()
 
-    return f'{customer_name} - Contrato do ativado!'
+    return f'{customer_name} - Contrato ativado.'
 
 
-# contract_activation('1', '8950', True)
+# contract_activation('1', '8950', 'Fulano', True)

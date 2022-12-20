@@ -51,6 +51,8 @@ def register_customers_schedulings(secs=2):
                 subject = '19'
             elif '38' in infos_arr[2]:
                 subject = '38'
+            elif '34' in infos_arr[2]:
+                subject = '34'
 
             if len(details) == 2:
                 

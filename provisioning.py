@@ -1,35 +1,23 @@
-def customer_id():
-
+def costumers_id_list():
     import config, helpers
-
     id_list = open('../ID_List.txt', 'w')
-
     for _, row in config.total_services.iterrows():
-
         columns = [
             str(row['ID']),
             row['Assunto'],
             row['Cliente'],
             row['Condomínio'],
         ]
-
         id, subject, name, condominium = columns
-
         if subject == 'Instalação' and (condominium in helpers.ProviningSystems['huawei'] or helpers.ProviningSystems['datacom']):
-
             id_list.write(f'\n{id} - {condominium} - {name}\n')
-
     id_list.close()
 
 
-def customer_infos(customer_id):
-
+def generate_customer_infos(customer_id):
     from unicodedata import normalize
-    import re
-    import config, helpers
-
+    import re, config
     for _, row in config.registrations.iterrows():
-
         columns = [
             str(row['ID']),
             row['Cliente'],
@@ -37,46 +25,37 @@ def customer_infos(customer_id):
             str(row['Bl']),
             str(row['Apto']),
         ]
-
         id, name, condominium, block, apt = columns
-
         if id == customer_id:
-
             format_name = (normalize('NFKD', name).encode('ASCII','ignore').decode('ASCII')).lower()
             arr_name = (format_name.lower()).split(' ')
             short_names = ['de', 'do', 'dos', 'da', 'das', 'e']
             customer_name = []
-
             for x in range(len(arr_name)):
                 if not arr_name[x] in short_names:
                     customer_name.append(arr_name[x])
-
             block = ''.join(re.findall('[0-9]+', block))
-            
             if len(block) == 1: block = '0' + block
-            
             apt = ''.join(re.findall('[0-9]+', apt))
-
             infos = f'{customer_name[0]}-{customer_name[1]}-bl{block}-apto{apt}'
-
             return [name, infos, condominium, block]
 
 
-def provis_customer_datacom():
+def provis_customer_datacom(op, id):
 
     import telnetlib, time, os, infra_configs
     from datetime import date, datetime
-    
-    customer_id = input('\nID: ')
+    from dotenv import load_dotenv
+    import SeleniumBots.contract_activation as CA
 
     # # - - - - - - - - - - - - - - - - - - - - 
     
-    name, infos, condominium, block = customer_infos(customer_id)
+    name, infos, condominium, block = generate_customer_infos(id)
 
     ip_olt = infra_configs.discover_olt(condominium)
     
     print('\nolt: ' + ip_olt)
-    
+
     print('cliente: ' + infos)
 
     # # - - - - - - - - - - - - - - - - - - - - 
@@ -87,7 +66,10 @@ def provis_customer_datacom():
         print('Erro ao se conectar!')
 
     user = b'erosa\n'
-    password = b'123@mudar\n' 
+    # password = b'123@mudar\n'
+
+    load_dotenv()
+    password = os.environ.get('OLT_PASS').encode('ascii') + b'\n'
 
     telnet.read_until(b': ')
     telnet.write(user)
@@ -128,7 +110,8 @@ def provis_customer_datacom():
     telnet.write(f'do show running-config interface gpon {onu_gpon} | nomore'.encode('ascii') + b'\n')
 
     telnet.read_until(b'\n')
-    time.sleep(5)
+
+    time.sleep(7)
 
     onus = telnet.read_very_eager().splitlines()
 
@@ -167,6 +150,8 @@ def provis_customer_datacom():
 
     telnet.write(b'commit\n')
 
+    time.sleep(3)
+
     telnet.read_until(b'# ')
 
     telnet.write(b'top\n')
@@ -178,6 +163,7 @@ def provis_customer_datacom():
     telnet.write(b'do show running-config | include service-port | nomore\n')
 
     telnet.read_until(b'# ')
+
     time.sleep(45)
 
     services = telnet.read_very_eager().splitlines()
@@ -213,24 +199,22 @@ def provis_customer_datacom():
     now_time = now_date.split('.')[0]
 
     provis_logs = open(f'../Provising_Logs_{today}.txt', 'w')
-    provis_logs.write(f'\n[{now_time}]\n{name} ({condominium})\nMAC: {onu_mac}\nGPON: {onu_gpon}\nONU: {curr_onu}\nVLAN: {vlan}\nService Port: {curr_service}\n')
+    provis_logs.write(f'\n[{now_time}]\n{name} ({condominium})\n{infos}\nMAC: {onu_mac}\nGPON: {onu_gpon}\nONU: {curr_onu}\nVLAN: {vlan}\nService Port: {curr_service}\n')
     provis_logs.close()
 
-    # return f'Cliente {name} instalado com sucesso!'
+    # CA.contract_activation(op, id, name)
 
-    provis_customer_datacom()
-
-
-def provis_customer_huawei(customer_id):
-
-    pass
+    # return f'{name} - Provisionamento concluído.'
 
 
-# print(customer_infos('9099'))
+def provis_customer_huawei(): pass
 
-provis_customer_datacom()
+
+# print(generate_customer_infos('9099'))
+
+# provis_customer_datacom('0', '7852')
 
 
 # import telnetlib
-# telnet = telnetlib.Telnet('10.72.181.59')
+# telnet = telnetlib.Telnet('')
 # telnet.interact()
