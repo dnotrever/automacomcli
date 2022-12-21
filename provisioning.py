@@ -66,7 +66,6 @@ def provis_customer_datacom(op, id):
         print('Erro ao se conectar!')
 
     user = b'erosa\n'
-    # password = b'123@mudar\n'
 
     load_dotenv()
     password = os.environ.get('OLT_PASS').encode('ascii') + b'\n'
